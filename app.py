@@ -1,35 +1,36 @@
 import streamlit as st
 import pandas as pd
 from pandasai import SmartDataframe
-from langchain_openai import ChatOpenAI
 from pandasai.responses.streamlit_response import StreamlitResponse
-import os,glob
-from langchain_google_genai import ChatGoogleGenerativeAI
-pwd=os.getcwd()
+import os, glob
 from dotenv import load_dotenv
-import os
+
+# Import ChatGroq instead of ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
+
+# Load environment variables
 load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-llm = ChatGoogleGenerativeAI(
-    model="gemini-pro",
-    google_api_key=GOOGLE_API_KEY,
-    temperature=0
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # It's better to store your Groq API key in .env
+
+# Initialize the LLM using ChatGroq
+llm = ChatGroq(
+    temperature=0,
+    groq_api_key=GROQ_API_KEY,  # Use the Groq API key from environment variables
+    model_name="llama-3.1-70b-versatile"
 )
-st.title(" ⚛ Data Analysis And Visualization Tool 📶")
-st.sidebar.title("AnalyzeX 📶")
+
+st.title("SalesPulse Analytics 📶")
+
+st.sidebar.title("SalesPulse Analytics 📶")
 st.sidebar.header("𝐖𝐄𝐋𝐂𝐎𝐌𝐄 🤗")
 st.sidebar.title("About This Tool")
-
-st.sidebar.write("""
-Welcome to **AnalyzeX** – your ultimate solution for data analysis and visualization.  
-Upload your datasets and gain instant insights with:  
-- Comprehensive analysis  
-- Interactive visualizations  
-- User-friendly interface  
-""")
-
+st.sidebar.write("This tool is designed specifically for **Sales Analytics** for **Small Enterprises**. ")
+st.sidebar.write("Features include:")
+st.sidebar.markdown("- Detailed insights 📈")
+st.sidebar.markdown("- Visualizations 📊")
+st.sidebar.markdown("- Customized reports 📝")
 file = st.sidebar.file_uploader("Upload your file in XLSV or CSV", type=["xlsx", "csv"])
-
 
 def query_enhancer(user_query, columns):
     """
@@ -41,7 +42,6 @@ def query_enhancer(user_query, columns):
         if column.lower() in user_query.lower():  # case-insensitive match
             enhanced_query = enhanced_query.replace(column.lower(), column)
     return enhanced_query
-
 
 if file:
     try:
@@ -56,7 +56,6 @@ if file:
         st.error(f"Error reading the file: {e}")
         st.stop()
 
-    
     sdf = SmartDataframe(df,
                          config={"llm": llm, "response_parser": StreamlitResponse, "save_charts": True,
                                  "save_charts_path": os.getcwd()})
@@ -78,16 +77,103 @@ if file:
                     response = sdf.chat(enhanced_query)
                     st.write(response)
 
-    if (selected_option=="plot"):
-        user_input = st.text_area("Ask your question here for plotting")
-        if user_input:
+        elif query_type == "Sales vs Profit":
+            user_input = "Sales vs Profit"  # Predefined query for Sales vs Profit
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                st.write(response)
+
+        elif query_type == "Date vs Profit":
+            user_input = "Date vs Profit"  # Predefined query for Date vs Profit
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                st.write(response)
+
+    elif selected_option == "plot":
+        query_type = st.selectbox("Choose a plot query type", ["Type Your Message", "Sales vs Profit", "Date vs Profit","Product Category vs Sales","Product Category vs Profit","date vs Sales","Product Category vs Margin"])
+
+        if query_type == "Type Your Message":
+            user_input = st.text_area("Ask your question here for plotting")
+            if user_input:
                 enhanced_query = query_enhancer(user_input, columns)
                 btn = st.button("Submit")
-            
+
                 if btn:
                     response = sdf.chat(enhanced_query)
                     file = glob.glob(os.getcwd() + "/*.png")
                     if file:
                         st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
-   
-                
+
+        elif query_type == "Sales vs Profit":
+            user_input = "Sales vs Profit"  # Predefined query for Sales vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
+
+        elif query_type == "Date vs Profit":
+            user_input = "Date vs Profit"  # Predefined query for Date vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
+
+        
+        elif query_type == "Product Category vs Sales":
+            user_input = "Product Category vs Sales"  # Predefined query for Date vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
+
+        elif query_type == "Product Category vs Profit":
+            user_input = "Product Category vs Profit"  # Predefined query for Date vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
+        
+
+        elif query_type == "date vs Sales":
+            user_input = "Date vs Sales"  # Predefined query for Date vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
+
+        elif query_type == "Product Category vs Margin":
+            user_input = "Product Category vs Margin"  # Predefined query for Date vs Profit plotting
+            enhanced_query = query_enhancer(user_input, columns)
+            btn = st.button("Submit")
+
+            if btn:
+                response = sdf.chat(enhanced_query)
+                file = glob.glob(os.getcwd() + "/*.png")
+                if file:
+                    st.image(image=file[0], caption="Plot for: " + user_input, width=1024)
